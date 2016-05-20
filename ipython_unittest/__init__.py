@@ -1,3 +1,4 @@
+# coding: utf-8
 """
 `%%unittest`, `%%unittest_testcase`, `%%unittest_main` magics for IPython
 ===========================================
@@ -75,8 +76,10 @@ import unittest
 import re
 
 from copy import copy
-from itertools import zip_longest
-
+try:
+    from itertools import zip_longest
+except ImportError:
+    from itertools import izip_longest as zip_longest
 
 from IPython.core.magic import Magics, magics_class, cell_magic
 from IPython.core.magic_arguments import (argument, magic_arguments,

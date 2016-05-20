@@ -12,7 +12,7 @@ except (IOError, ImportError):
 
 setup(
     name="ipython_unittest",
-    version="0.0.1",
+    version="0.0.3",
     description="Add unittest cell magics to IPython for easily running tests",
     long_description=long_description,
     packages=find_packages(exclude=["tests_*", "tests"]),
@@ -20,5 +20,5 @@ setup(
     author_email="joaofelipenp@gmail.com",
     license="MIT",
     keywords="ipython jupyter unittest tdd dojo",
-    url="https://github.com/JoaoFelipe/ipython-unittest",
+    url="https://github.com/JoaoFelipe/ipython-unittest"
 )
