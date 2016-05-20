@@ -3,7 +3,6 @@ IPython-Unittest
 
 This extension provides three cell magics for IPython/Jupyter
 
-
 First magic is `%%unittest_main`. This magic runs testcases defined in a cell
 
 ```python
@@ -56,6 +55,11 @@ These magics support optional arguments:
                    Valid for '%%unittest' and '%%unittest_testcase'
 -u (--unparse):    print cell source code after transformations.
 ```
+
+How to Install
+----
+
+```pip install ipython_unittest```
 
 
 Contact
