@@ -36,6 +36,8 @@ for each assert.
 
 These magics support optional arguments:
 
+    -d (--dojo):       add timer and change timer color to indicate whether or
+                       not the tests have passed
     -c (--color):      change logo color to indicate whether or not the tests
                        have passed
     -p (--previous) P: set cursor to P cells before (default: -1 = next cell)
@@ -285,15 +287,161 @@ class TransformAssert(ast.NodeTransformer):
 class IPythonUnittest(Magics):
     """Define unittest magics"""
 
-    def status(self, color, show_logo=False):                                    # pylint: disable=no-self-use
+    def status(self, color, show_logo=False, dojo=False):                                    # pylint: disable=no-self-use
         """Show test status"""
-        text = """$('a[title="dashboard"]').css("background-color","{}");"""
+        selector = """$('{}').css("background-color","{}");"""
         if show_logo:
-            display(Javascript(text.format(color)))
+            display(Javascript(selector.format('a[title="dashboard"]', color)))
+        if dojo:
+            display(Javascript(selector.format("#dojo-timer-time", color)))
 
     def run_tests(self, ipython, args, tree):
         """Execute tests for compiled code"""
-        self.status("yellow", show_logo=args.color)
+        if args.dojo:
+            display(Javascript("""
+
+            var DojoClock = {
+              seconds: 300,
+              default: 300,
+              mouseOver: false,
+
+
+              secToMMSS: function (sec) {
+                var minutes = Math.floor(sec / 60);
+                var seconds = sec - (minutes * 60);
+                if (minutes < 10) { minutes = "0" + minutes; }
+                if (seconds < 10) { seconds = "0" + seconds; }
+                return minutes + ":" + seconds;
+              },
+
+              display: function () {
+                var self = this;
+                $("#dojo-timer-time").text(self.secToMMSS(self.seconds));
+              },
+
+              viewText: function() {
+                var self = this;
+                if ($("#dojo-eye").hasClass("fa-eye") ||
+                    $("#dojo-play-pause-icon").hasClass("fa-play") ||
+                    self.mouseOver) {
+                  $("#dojo-timer-time").css("color", "black");
+                } else {
+                  $("#dojo-timer-time").css("color", "transparent");
+                }
+              },
+
+              start: function () {
+                var self = this;
+                $("#dojo-play-pause-icon").removeClass("fa-play");
+                $("#dojo-play-pause-icon").addClass("fa-pause");
+
+                this.interval = setInterval(function () {
+                  self.display();
+                  if (self.seconds == 0) {
+                    self.pause();
+                    alert("Time is up. Click ok to restart timer");
+                    self.seconds = self.default;
+                    self.start();
+                  } else {
+                    self.seconds--;
+                  }
+                  self.viewText();
+
+                }, 1000);
+                $("#dojo-timer-interval").text(this.interval);
+              },
+
+              pause: function () {
+                var self = this;
+                $("#dojo-play-pause-icon").addClass("fa-play");
+                $("#dojo-play-pause-icon").removeClass("fa-pause");
+                $("#dojo-timer-interval").text("");
+                clearInterval(this.interval);
+                delete this.interval;
+                self.viewText();
+              },
+
+              resume: function () {
+                if (!this.interval) this.start();
+              },
+
+              reset: function () {
+                var self = this;
+                self.seconds = self.default;
+                self.display();
+                self.pause();
+              }
+
+            }
+
+            //if ($("#dojo-timer").length) {
+            //  var interval = parseInt($("#dojo-timer-interval").text());
+            //  clearInterval(interval);
+            //  $("#dojo-timer").remove();
+            //}
+            if (!$("#dojo-timer").length) {
+              $("#kernel_indicator").after(
+                '<div id="dojo-timer" class="navbar-text indicator_area">' +
+                  '<span id="dojo-timer-interval" ' +
+                   'style="margin: 0 5px; display: none;"></span>' +
+                  '<a href="#" id="dojo-play-pause" ' +
+                   'style="color:rgb(119,119,119); margin: 0 5px;">' +
+                    '<i id="dojo-play-pause-icon" title="Play/Pause Timer" ' +
+                     'class="fa fa-play" id="refresh_timer_icon"></i>' +
+                  '</a>' +
+                  '<a href="#" id="dojo-time-toggler" ' +
+                   'style="color:rgb(119,119,119);">' +
+                    '<i id="dojo-eye" title="Toggle Timer" ' +
+                     'class="fa fa-eye-slash" id="refresh_timer_icon"></i>' +
+                  '</a>' +
+                  '<span id="dojo-timer-time" ' +
+                   'style="margin: 0 5px; color:black;">05:00</span>' +
+                  '<a href="#" id="dojo-reset-time" ' +
+                   'style="color:rgb(119,119,119);">' +
+                    '<i title="Reset Time" class="fa fa-refresh"></i>' +
+                  '</a>' +
+                  '<a href="#" id="dojo-configure-time" ' +
+                   'style="color:rgb(119,119,119); margin: 0 5px;">' +
+                    '<i title="Configure Time" class="fa fa-wrench"></i>'+
+                  '</a>' +
+                '</div>'
+              );
+              $("#dojo-timer-time").hover(function(e) {
+                if ($("#dojo-eye").hasClass("fa-eye-slash")) {
+                  DojoClock.mouseOver = e.type === "mouseenter";
+                  DojoClock.viewText();
+                }
+              });
+              $("#dojo-reset-time").click(function() {
+                DojoClock.reset();
+              });
+              $("#dojo-configure-time").click(function() {
+                var time = prompt("New time in seconds", DojoClock.default);
+                DojoClock.default = time;
+                DojoClock.reset();
+              });
+              $("#dojo-time-toggler").click(function() {
+                if ($("#dojo-eye").hasClass("fa-eye-slash")) {
+                  $("#dojo-eye").removeClass("fa-eye-slash");
+                  $("#dojo-eye").addClass("fa-eye");
+                } else {
+                  $("#dojo-eye").addClass("fa-eye-slash");
+                  $("#dojo-eye").removeClass("fa-eye");
+                }
+                DojoClock.viewText();
+              });
+              $("#dojo-play-pause").click(function() {
+                if ($("#dojo-play-pause-icon").hasClass("fa-pause")) {
+                  DojoClock.pause()
+                } else {
+                  DojoClock.resume();
+                }
+              });
+            }
+
+            """))
+
+        self.status("yellow", show_logo=args.color, dojo=args.dojo)
 
         if not 'unittest' in ipython.user_ns:
             ipython.user_ns['unittest'] = unittest
@@ -328,11 +476,16 @@ class IPythonUnittest(Magics):
                 .format(args.previous + 1)
             ))
         runner = unittest.TextTestRunner(verbosity=1, stream=stream).run(suite)
-        self.status("green" if runner.wasSuccessful() else "red", show_logo=args.color)
+        self.status("lightgreen" if runner.wasSuccessful() else "salmon",
+                    show_logo=args.color, dojo=args.dojo)
         return runner
 
 
     @magic_arguments()
+    @argument(
+        '-d', '--dojo', action='store_true',
+        help="add timer and change timer color to indicate tests statuses"
+    )
     @argument(
         '-c', '--color', action='store_true',
         help="change logo color to indicate tests statuses"
@@ -364,6 +517,10 @@ class IPythonUnittest(Magics):
         return self.run_tests(get_ipython(), args, tree)
 
     @magic_arguments()
+    @argument(
+        '-d', '--dojo', action='store_true',
+        help="add timer and change timer color to indicate tests statuses"
+    )
     @argument(
         '-c', '--color', action='store_true',
         help="change logo color to indicate tests statuses"
@@ -405,6 +562,10 @@ class IPythonUnittest(Magics):
         return self.run_tests(get_ipython(), args, tree)
 
     @magic_arguments()
+    @argument(
+        '-d', '--dojo', action='store_true',
+        help="add timer and change timer color to indicate tests statuses"
+    )
     @argument(
         '-c', '--color', action='store_true',
         help="change logo color to indicate tests statuses"
