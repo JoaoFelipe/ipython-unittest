@@ -1,9 +1,36 @@
 IPython-Unittest
 ==========
 
-This extension provides three cell magics for IPython/Jupyter
+This extension provides testing support to IPython through cell magics. Currently, we have three magics that transforms the cell code and executes unittest: `%%unittest_main`, `%%unittest_testcase` and `%%unittest`; one magic to run external tests: `%%external`; and one associated magic to write external files with syntax highlight: `%%write {mode}`
 
-First magic is `%%unittest_main`. This magic runs testcases defined in a cell
+Additionally, it includes actions to Jupyter toolbar with a timer and a people log to support coding dojo sessions. These actions can be either loaded on demand or installed as a nbextension
+
+How to Install
+----
+
+```pip install ipython_unittest```
+
+To load the extension, please run:
+```python
+%load_ext ipython_unittest
+```
+
+Alternatively, to load the extension and the coding dojo toolbar, please run:
+```python
+%load_ext ipython_unittest.dojo
+```
+
+The coding dojo toolbar can be installed as a stand-alone nbextension as well:
+```
+jupyter nbextension install --py ipython_unittest --user
+jupyter nbextension enable --py ipython_unittest --user
+```
+
+
+Cell Magics
+----
+
+The first magic is `%%unittest_main`. This magic runs testcases defined in a cell
 
 ```python
 %%unittest_main
@@ -11,12 +38,12 @@ class MyTest(unittest.TestCase):
     def test_1_plus_1_equals_2(self):
         sum = 1 + 1
         self.assertEqual(sum, 2)
-	
+
     def test_2_plus_2_equals_4(self):
         self.assertEqual(2 + 2, 4)
 ```
 
-Second magic is `%%unittest_testcase`. This magic creates a testcase with
+The second magic is `%%unittest_testcase`. This magic creates a testcase with
 functions defined in the cell and execute it.
 
 ```python
@@ -29,7 +56,7 @@ def test_2_plus_2_equals_4(self):
     self.assertEqual(2 + 2, 4)
 ```
 
-Third magic is `%%unittest`. This magic converts Python assert into
+The third magic is `%%unittest`. This magic converts Python assert into
 unittest functions.
 
 ```python
@@ -56,10 +83,32 @@ These magics support optional arguments:
 -u (--unparse):    print cell source code after transformations.
 ```
 
-How to Install
-----
+The fourth magic is `%%external`. This magic runs external system commands and check their exit codes. This way, it is possible to run tests from other languages:
+```python
+%%external
+rspec fizzbuzz_spec.rb
+```
 
-```pip install ipython_unittest```
+The `%external` magic supports the arguments `--color` and `--previous` described before.
+
+
+Finally, since it is possible to run external commands, we included an extra magic, `%%write` to write files and keep the syntax highlight.
+This magic receives a CodeMirror mode as first argument and the remaining arguments are redirected to IPython's `%%writefile`
+
+Note that it will start highlighting after the first execution.
+
+```ruby
+%%write ruby fizzbuzz_spec.rb
+def fizzbuzz(x)
+  x
+end
+
+describe "fizzbuzz" do
+  it "should be fizz if 3" do
+    expect(fizzbuzz(3)).to eq('Fizz')
+  end
+end
+```
 
 
 Contact
