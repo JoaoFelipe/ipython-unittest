@@ -1,4 +1,4 @@
-define("jupyter_dojo", [
+define([
     'base/js/namespace',
     'notebook/js/actions',
 ], function(
@@ -243,7 +243,7 @@ define("jupyter_dojo", [
         help_index : 'zz',
         handler : function () {
             var fn = prompt("Function Name?");
-            Jupyter.notebook.insert_cell_below().set_text("%%unittest -p 1 -d\nassert "+fn+"() == 0");
+            Jupyter.notebook.insert_cell_below().set_text("%%unittest -p 1\nassert "+fn+"() == 0");
             Jupyter.notebook.insert_cell_below().set_text("def "+fn+"():\n    pass");
             Jupyter.notebook.insert_cell_below().set_text("%load_ext ipython_unittest.dojo");
         }

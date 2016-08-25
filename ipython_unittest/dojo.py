@@ -13,6 +13,7 @@ def load_ipython_extension(ipython):
     display(Javascript(
         resource_string(MODULE, "resources/index.js")
         .decode("utf-8")
+        .replace("define([", "define('jupyter_jodo', [")
     ))
     display(Javascript("""
         require(["jupyter_dojo"], function(j){

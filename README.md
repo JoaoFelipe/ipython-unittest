@@ -85,8 +85,8 @@ These magics support optional arguments:
 
 The fourth magic is `%%external`. This magic runs external system commands and check their exit codes. This way, it is possible to run tests from other languages:
 ```python
-%%external
-rspec fizzbuzz_spec.rb
+%%external --previous 1
+mocha test.js
 ```
 
 The `%external` magic supports the arguments `--color` and `--previous` described before.
@@ -97,17 +97,16 @@ This magic receives a CodeMirror mode as first argument and the remaining argume
 
 Note that it will start highlighting after the first execution.
 
-```ruby
-%%write ruby fizzbuzz_spec.rb
-def fizzbuzz(x)
-  x
-end
-
-describe "fizzbuzz" do
-  it "should be fizz if 3" do
-    expect(fizzbuzz(3)).to eq('Fizz')
-  end
-end
+```javascript
+%%write javascript test.js
+var assert = require('assert');
+describe('Array', function() {
+  describe('#indexOf()', function() {
+    it('should return -1 when the value is not present', function() {
+      assert.equal(-1, [1,2,3].indexOf(4));
+    });
+  });
+});
 ```
 
 

@@ -486,8 +486,8 @@ class IPythonUnittest(Magics):
         fail = False
         for line in cell.split("\n"):
             if line:
-              self.shell.system(line)
-              fail = fail or self.shell.user_ns["_exit_code"]
+                self.shell.system(line)
+                fail = fail or self.shell.user_ns["_exit_code"]
         if args.previous != -1:
             display(Javascript(
                 "Jupyter.notebook.select("
@@ -496,6 +496,7 @@ class IPythonUnittest(Magics):
             ))
         self.status("lightgreen" if not fail else "salmon",
                     show_logo=args.color)
+        return not fail
 
 
     @magic_arguments()
