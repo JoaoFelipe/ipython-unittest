@@ -85,7 +85,7 @@ These magics support optional arguments:
 
 The fourth magic is `%%external`. This magic runs external system commands and check their exit codes. This way, it is possible to run tests from other languages:
 ```python
-%%external --previous 1
+%%external -p 1
 mocha test.js
 ```
 
