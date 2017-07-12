@@ -523,12 +523,12 @@ class IPythonUnittest(Magics):
         args = parse_argstring(self.write, line)
         javascript = """
               var mode = 'magic_{0}';
-              if (!IPython.CodeCell.config_defaults.highlight_modes[mode]) {{
-                  IPython.CodeCell.config_defaults.highlight_modes[mode] = {{
+              if (!Jupyter.CodeCell.options_default.highlight_modes[mode]) {{
+                  Jupyter.CodeCell.options_default.highlight_modes[mode] = {{
                       'reg':[]
                   }};
               }}
-              IPython.CodeCell.config_defaults.highlight_modes[mode].reg.push(
+              Jupyter.CodeCell.options_default.highlight_modes[mode].reg.push(
                   /^%%write {0}/
               );
         """.format(args.mode)
