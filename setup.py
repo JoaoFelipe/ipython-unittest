@@ -19,7 +19,7 @@ except (IOError, ImportError):
 
 setup(
     name="ipython_unittest",
-    version="0.2.4",
+    version="0.2.6",
     description="Add unittest cell magics to IPython for easily running tests",
     long_description=long_description,
     packages=find_packages(exclude=["tests_*", "tests"]),
