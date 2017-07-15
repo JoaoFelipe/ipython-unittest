@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 import os
-from ez_setup import use_setuptools
-use_setuptools()
-
 from setuptools import setup, find_packages
 
 
@@ -22,7 +19,7 @@ except (IOError, ImportError):
 
 setup(
     name="ipython_unittest",
-    version="0.2.3",
+    version="0.2.4",
     description="Add unittest cell magics to IPython for easily running tests",
     long_description=long_description,
     packages=find_packages(exclude=["tests_*", "tests"]),
