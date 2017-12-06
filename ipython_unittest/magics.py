@@ -76,19 +76,23 @@ import ast
 import sys
 import unittest
 import re
+import subprocess
 
 from copy import copy
+from collections import OrderedDict
 try:
     from itertools import zip_longest
 except ImportError:
     from itertools import izip_longest as zip_longest
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 from IPython.core.magic import Magics, magics_class, cell_magic
 from IPython.core.magic_arguments import (argument, magic_arguments,
                                           parse_argstring)
-from IPython.display import Javascript, display
-
-from pkg_resources import resource_string
+from IPython.display import display
 
 
 MODULE = __name__
@@ -128,8 +132,9 @@ def function_def(name, args, body, decs, returns=None):
     return ast.FunctionDef(*constructor)
 
 
-def arguments(args, vararg, kwarg, default, kwonlyargs=None, kw_defaults=None):  # pylint: disable=too-many-arguments
+def arguments(args, vararg, kwarg, default, kwonlyargs=None, kw_defaults=None):
     """Create arguments Node on both python 2 and 3"""
+    # pylint: disable=too-many-arguments
     kwonlyargs = kwonlyargs or []
     kw_defaults = kw_defaults or []
 
@@ -290,20 +295,44 @@ class TransformAssert(ast.NodeTransformer):
         ), node)), node)
 
 
+class Status:
+    """Represent a Test Result"""
+    # pylint: disable=too-few-public-methods
+
+    def __init__(self, color, message="", previous=-1):
+        self.color = color
+        self.message = message
+        self.previous = previous
+
+    def _ipython_display_(self):
+        bundle = OrderedDict([
+            ('application/unittest.status+json', {
+                'color': self.color,
+                'message': self.message,
+                'previous': - (self.previous + 1)
+            }),
+            ('text/plain', "")
+        ])
+        if self.color == "salmon":
+            bundle['text/plain'] = "Fail"
+        elif self.color == "lightgreen":
+            bundle['text/plain'] = "Success"
+
+        display(bundle, raw=True)
+
+
 @magics_class
 class IPythonUnittest(Magics):
     """Define unittest magics"""
 
-    def status(self, color, show_logo=False):                                    # pylint: disable=no-self-use
-        """Show test status"""
-        selector = """$('{}').css("background-color","{}");"""
-        if show_logo:
-            display(Javascript(selector.format('a[title="dashboard"]', color)))
-        display(Javascript(selector.format(":has(> #dojo-timer-time)", color)))
-
     def run_tests(self, ipython, args, tree):
         """Execute tests for compiled code"""
-        self.status("yellow", show_logo=args.color)
+        # pylint: disable=no-self-use
+        # pylint: disable=bare-except
+        # pylint: disable=W0122
+        # pylint: disable=W0123
+
+        display(Status("yellow"))
 
         if not 'unittest' in ipython.user_ns:
             ipython.user_ns['unittest'] = unittest
@@ -316,7 +345,8 @@ class IPythonUnittest(Magics):
         try:
             if hasattr(args, 'stream'):
                 stream = eval(
-                    args.stream, ipython.user_global_ns, ipython.user_ns)
+                    args.stream, ipython.user_global_ns, ipython.user_ns
+                )
         except:
             stream = sys.stdout
         compiled = compile(tree, 'Cell Tests', 'exec')
@@ -331,23 +361,19 @@ class IPythonUnittest(Magics):
                     and (isinstance(value, type))
                     and (issubclass(value, unittest.TestCase))):
                 suite.addTests(loader.loadTestsFromTestCase(value))
-        if args.previous != -1:
-            display(Javascript(
-                "Jupyter.notebook.select("
-                "Jupyter.notebook.get_selected_index() - {})"
-                .format(args.previous + 1)
-            ))
-        runner = unittest.TextTestRunner(verbosity=1, stream=stream).run(suite)
-        self.status("lightgreen" if runner.wasSuccessful() else "salmon",
-                    show_logo=args.color)
+
+        sio = StringIO()
+        runner = unittest.TextTestRunner(verbosity=1, stream=sio).run(suite)
+        text = sio.getvalue()
+        display(Status(
+            "lightgreen" if runner.wasSuccessful() else "salmon",
+            message=text,
+            previous=args.previous
+        ))
+        stream.write(text)
         return runner
 
-
     @magic_arguments()
-    @argument(
-        '-c', '--color', action='store_true',
-        help="change logo color to indicate tests statuses"
-    )
     @argument(
         '-p', '--previous', default=-1, type=int,
         help="set cursor to P cells before"
@@ -361,7 +387,6 @@ class IPythonUnittest(Magics):
         """Run defined TestCases
 
         Parameters
-            -c (--color): change logo color to indicate whether or not the tests have passed
             -p (--previous) P: Set cursor to P cells before
             -s (--stream) S: Set output stream (default: sys.stdout)
 
@@ -376,10 +401,6 @@ class IPythonUnittest(Magics):
         return self.run_tests(get_ipython(), args, tree)
 
     @magic_arguments()
-    @argument(
-        '-c', '--color', action='store_true',
-        help="change logo color to indicate tests statuses"
-    )
     @argument(
         '-p', '--previous', default=-1, type=int,
         help="set cursor to P cells before"
@@ -401,7 +422,6 @@ class IPythonUnittest(Magics):
         """Create test case from functions
 
         Parameters
-            -c (--color): change logo color to indicate whether or not the tests have passed
             -p (--previous) P: Set cursor to P cells before
             -s (--stream) S: Set output stream (default: sys.stdout)
             -t (--testcase): Define TestCase name (default: JupyterTest)
@@ -418,10 +438,6 @@ class IPythonUnittest(Magics):
         return self.run_tests(get_ipython(), args, tree)
 
     @magic_arguments()
-    @argument(
-        '-c', '--color', action='store_true',
-        help="change logo color to indicate tests statuses"
-    )
     @argument(
         '-p', '--previous', default=-1, type=int,
         help="set cursor to P cells before"
@@ -443,7 +459,6 @@ class IPythonUnittest(Magics):
         """Create test case from functions
 
         Parameters
-            -c (--color): change logo color to indicate whether or not the tests have passed
             -p (--previous) P: Set cursor to P cells before
             -s (--stream) S: Set output stream (default: sys.stdout)
             -t (--testcase): Define TestCase name (default: JupyterTest)
@@ -463,10 +478,6 @@ class IPythonUnittest(Magics):
 
     @magic_arguments()
     @argument(
-        '-c', '--color', action='store_true',
-        help="change logo color to indicate tests statuses"
-    )
-    @argument(
         '-p', '--previous', default=-1, type=int,
         help="set cursor to P cells before"
     )
@@ -475,27 +486,33 @@ class IPythonUnittest(Magics):
         """Run external tests
 
         Parameters
-            -c (--color): change logo color to indicate whether or not the tests have passed
             -p (--previous) P: Set cursor to P cells before
 
         In [1]: %%external
            ...: rspec fizzbuzz_spec.rb
         """
         args = parse_argstring(self.external, line)
-        self.status("yellow", show_logo=args.color)
+        display(Status("yellow"))
         fail = False
-        for line in cell.split("\n"):
-            if line:
-                self.shell.system(line)
-                fail = fail or self.shell.user_ns["_exit_code"]
-        if args.previous != -1:
-            display(Javascript(
-                "Jupyter.notebook.select("
-                "Jupyter.notebook.get_selected_index() - {})"
-                .format(args.previous + 1)
-            ))
-        self.status("lightgreen" if not fail else "salmon",
-                    show_logo=args.color)
+        output = b""
+        for command in cell.split("\n"):
+            if command:
+                process = subprocess.Popen(
+                    command,
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+
+                output += process.stdout.read()
+                output += process.stderr.read()
+                status = process.wait()
+                fail = fail or status
+        display(Status(
+            "lightgreen" if not fail else "salmon",
+            message=output,
+            previous=args.previous
+        ))
         return not fail
 
 
@@ -520,19 +537,6 @@ class IPythonUnittest(Magics):
           The file will be overwritten unless the -a (--append) flag is specified.
           Applies syntax highlighting after first execution
         """
-        args = parse_argstring(self.write, line)
-        javascript = """
-              var mode = 'magic_{0}';
-              if (!Jupyter.CodeCell.options_default.highlight_modes[mode]) {{
-                  Jupyter.CodeCell.options_default.highlight_modes[mode] = {{
-                      'reg':[]
-                  }};
-              }}
-              Jupyter.CodeCell.options_default.highlight_modes[mode].reg.push(
-                  /^%%write {0}/
-              );
-        """.format(args.mode)
-        display(Javascript(javascript))
         new_line = " ".join(line.split(" ")[1:])
         return self.shell.run_cell_magic("writefile", new_line, cell)
 

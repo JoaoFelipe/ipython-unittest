@@ -10,14 +10,11 @@ MODULE = __name__
 
 def load_ipython_extension(ipython):
     """Load the extension in IPython."""
-    display(Javascript(
-        resource_string(MODULE, "resources/index.js")
-        .decode("utf-8")
-        .replace("define([", "define('jupyter_dojo', [")
-    ))
-    display(Javascript("""
-        require(["jupyter_dojo"], function(j){
-          j.load_ipython_extension();
-        });
-    """))
+    print("This Extension were removed!")
+    print("Please install the jupyter_dojo nbextension/labextension:")
+    print("  https://github.com/JoaoFelipe/jupyter-dojo")
+    print("And use only the top extension")
+    print("  %load_ext ipython_unittest")
+
+
     load_magics(ipython)

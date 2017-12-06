@@ -1,9 +1,13 @@
 IPython-Unittest
 ==========
 
-This extension provides testing support to IPython through cell magics. Currently, we have three magics that transforms the cell code and executes unittest: `%%unittest_main`, `%%unittest_testcase` and `%%unittest`; one magic to run external tests: `%%external`; and one associated magic to write external files with syntax highlight: `%%write {mode}`
+This extension provides testing support to IPython through cell magics. Currently, we have three magics that transforms the cell code and executes unittest: `%%unittest_main`, `%%unittest_testcase` and `%%unittest`; one magic to run external tests: `%%external`; and one associated magic to write external files: `%%write {mode}`
 
-Additionally, it includes actions to Jupyter toolbar with a timer and a people log to support coding dojo sessions. These actions can be either loaded on demand or installed as a nbextension
+Please, take a look at [jupyter_dojo](https://github.com/JoaoFelipe/jupyter-dojo) to improve the jupyter support of this extension with:
+* Test status in toolbar
+* Argument --previous, to move to previous cells after execution
+* Timer, pair programming log, function generation for coding dojo sessions
+* Syntax highlight for `%%write {mode}` magic
 
 How to Install
 ----
@@ -74,8 +78,6 @@ for each assert.
 
 These magics support optional arguments:
 ```
--c (--color):      change logo color to indicate whether or not the tests
-                   have passed
 -p (--previous) P: set cursor to P cells before (default: -1 = next cell)
 -s (--stream) S:   set test output stream (default: 'sys.stdout')
 -t (--testcase) T: define TestCase name.
