@@ -12,22 +12,29 @@ Please, take a look at [jupyter_dojo](https://github.com/JoaoFelipe/jupyter-dojo
 How to Install
 ----
 
-```pip install ipython_unittest```
+Install the python package by running
+
+```
+pip install ipython_unittest
+```
+
+or
+
+```
+conda install -c conda-forge ipython_unittest
+```
+
+Note that conda releases take more time to update. Use the pypi version if you want to get the most recent release at any given time.
+
+It is strongly advisable to install the `jupyter_dojo` package as well:
+```
+pip install jupyter_dojo
+```
+
 
 To load the extension, please run:
 ```python
 %load_ext ipython_unittest
-```
-
-Alternatively, to load the extension and the coding dojo toolbar, please run:
-```python
-%load_ext ipython_unittest.dojo
-```
-
-The coding dojo toolbar can be installed as a stand-alone nbextension as well:
-```
-jupyter nbextension install --py ipython_unittest --user
-jupyter nbextension enable --py ipython_unittest --user
 ```
 
 
@@ -85,19 +92,21 @@ These magics support optional arguments:
 -u (--unparse):    print cell source code after transformations.
 ```
 
+The `--previous` argument only works with the [jupyter_dojo](https://github.com/JoaoFelipe/jupyter-dojo) extension installed.
+
 The fourth magic is `%%external`. This magic runs external system commands and check their exit codes. This way, it is possible to run tests from other languages:
 ```python
 %%external -p 1
 mocha test.js
 ```
 
-The `%external` magic supports the arguments `--color` and `--previous` described before.
+The `%external` magic supports the argument `--previous` described before.
 
 
 Finally, since it is possible to run external commands, we included an extra magic, `%%write` to write files and keep the syntax highlight.
 This magic receives a CodeMirror mode as first argument and the remaining arguments are redirected to IPython's `%%writefile`
 
-Note that it will start highlighting after the first execution.
+Once again, the `%external` magic only provides syntax highlighting should you have the [jupyter_dojo](https://github.com/JoaoFelipe/jupyter-dojo) extension installed.
 
 ```javascript
 %%write javascript test.js
@@ -111,6 +120,12 @@ describe('Array', function() {
 });
 ```
 
+
+## Links
+
+- [Jupyter Dojo](https://github.com/JoaoFelipe/jupyter-dojo)
+- [Pypi.org](https://pypi.org/project/ipython-unittest/)
+- [Conda Forge Feedstock](https://github.com/conda-forge/ipython_unittest-Feedstock)
 
 Contact
 ----
@@ -138,4 +153,3 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
