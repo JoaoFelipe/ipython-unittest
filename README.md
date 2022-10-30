@@ -120,6 +120,15 @@ describe('Array', function() {
 });
 ```
 
+## Alternatives
+
+- [ipytest](https://github.com/chmp/ipytest)
+- [jupyter-pytest-2](https://github.com/sashgorokhov/jupyter-pytest-2)
+- [ipython-pytest](https://github.com/akaihola/ipython_pytest)
+- [pytest-exploratory](https://pytest-exploratory.readthedocs.io/en/latest/)
+- [ipython_nose](https://github.com/taavi/ipython_nose)
+- [testbook](https://testbook.readthedocs.io/en/latest/)
+
 
 ## Links
 

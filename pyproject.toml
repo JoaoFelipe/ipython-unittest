@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ipython_unittest"
+version = "0.3.2"
+description = "Add unittest cell magics to IPython for easily running tests"
+readme = "README.md"
+license = {text = "MIT License"}
+authors = [{name = "Joao Pimentel", email = "joaofelipenp@gmail.com"}]
+keywords = ["ipython", "jupyter", "unittest", "tdd", "dojo"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "ipython"
+]
+
+[project.urls]
+Source = "https://github.com/JoaoFelipe/ipython-unittest"
+
+[project.optional-dependencies]
+unparse = ["astor"]
+
+[tool.setuptools.package-dir]
+ipython_unittest = "ipython_unittest"
+
+[tool.distutils.bdist_wheel]
+universal = true
