@@ -98,6 +98,15 @@ from IPython.display import display
 MODULE = __name__
 
 
+def create_module(body, node):
+    """Create AST Module"""
+    kwargs = {}
+    if sys.version_info >= (3, 8):
+        kwargs['type_ignores'] = node.type_ignores
+
+    return ast.copy_location(ast.Module(body, **kwargs), node)
+
+
 def maybe(obj, name, default=None):
     """Return atributte if it exists or default"""
     if hasattr(obj, name):
@@ -132,18 +141,22 @@ def function_def(name, args, body, decs, returns=None):
     return ast.FunctionDef(*constructor)
 
 
-def arguments(args, vararg, kwarg, default, kwonlyargs=None, kw_defaults=None):
+def arguments(args, vararg, kwarg, default, kwonlyargs=None, kw_defaults=None, posonlyargs=None):
     """Create arguments Node on both python 2 and 3"""
     # pylint: disable=too-many-arguments
     kwonlyargs = kwonlyargs or []
     kw_defaults = kw_defaults or []
 
-    constructor = [args, vararg]
+    constructor = []
+    if sys.version_info >= (3, 8):
+        constructor.append(posonlyargs or [])
+    constructor.append(args or [])
+    constructor.append(vararg)
     if sys.version_info > (3, 0):
-        constructor.append(kwonlyargs)
-        constructor.append(kw_defaults)
+        constructor.append(kwonlyargs or [])
+        constructor.append(kw_defaults or [])
     constructor.append(kwarg)
-    constructor.append(default)
+    constructor.append(default or [])
     return ast.arguments(*constructor)
 
 
@@ -199,7 +212,7 @@ class TransformFunction(ast.NodeTransformer):
                 functions, []
             )))
 
-        return ast.copy_location(ast.Module(body), node)
+        return create_module(body, node)
 
 
 class TransformAssert(ast.NodeTransformer):
@@ -262,7 +275,7 @@ class TransformAssert(ast.NodeTransformer):
                 if visit_stmt:
                     function_body.append(visit_stmt)
 
-        return ast.copy_location(ast.Module(body), node)
+        return create_module(body, node)
 
     def visit_Assert(self, node):                                                # pylint: disable=invalid-name, no-self-use
         """Visit Assert
@@ -340,8 +353,8 @@ class IPythonUnittest(Magics):
             ipython.user_ns['sys'] = sys
 
         if hasattr(args, 'unparse') and args.unparse:
-            import astunparse
-            print(astunparse.unparse(tree))
+            import astor
+            print(astor.to_source(tree))
         try:
             if hasattr(args, 'stream'):
                 stream = eval(
